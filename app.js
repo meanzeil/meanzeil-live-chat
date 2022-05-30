@@ -12,6 +12,8 @@ const {process_params} = require("express/lib/router");
 
 const app = express();
 
+const db = require('./helpers/db')();
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
