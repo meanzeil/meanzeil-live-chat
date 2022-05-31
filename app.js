@@ -3,8 +3,15 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const session = require('express-session')
-const passport = require('passport')
+const passport = require('passport');
+const session = require('express-session');
+
+let RedisStore = require("connect-redis")(session)
+const { createClient } = require("redis")
+let redisClient = createClient({ legacyMode: true })
+redisClient.connect().catch(console.error)
+
+
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -34,13 +41,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'bower_components')));
 
 //express-session
-app.use(session({
-  secret: process.env.SESSION_SECRET_KEY,
-    resave: false,
-    saveUninitialized: true,
-    cookie: { naxAge: 14 * 24 * 3600000 }
 
-}));
+
+app.use(
+    session({
+        store: new RedisStore({ client: redisClient }),
+        saveUninitialized: false,
+        secret: process.env.SESSION_SECRET_KEY,
+        resave: false,
+        cookie: { maxAge: 14 * 24 * 360000 }
+    })
+)
+
 //  passport.js
 app.use(passport.initialize());
 app.use(passport.session());
